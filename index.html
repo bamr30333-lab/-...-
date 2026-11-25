@@ -1,0 +1,1167 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المصحف الشريف الكامل • من الفاتحة إلى الناس</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Clear, highly legible Naskh & Sans fonts (No Ruq'ah) -->
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            naskh: ['Noto Naskh Arabic', 'Amiri', 'serif'],
+            amiri: ['Amiri', 'Noto Naskh Arabic', 'serif'],
+            cairo: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            emeraldBook: {
+              950: '#041f18',
+              900: '#073327',
+              800: '#0b4a39',
+              700: '#10624c',
+            },
+            goldLeaf: {
+              200: '#f6e29c',
+              300: '#ebd071',
+              400: '#d4af37',
+              500: '#b89021',
+              600: '#8f6d13',
+            },
+            parchment: {
+              50: '#fdfaf2',
+              100: '#f9f2e1',
+              200: '#efe3c6',
+              300: '#dfcca3',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root {
+      --quran-font: 'Noto Naskh Arabic', serif;
+      --quran-size: 1.55rem;
+      --page-bg: #fdfaf2;
+      --page-card: #fffdf7;
+      --page-text: #1b1811;
+      --page-border: #d4af37;
+      --ayah-highlight: rgba(212, 175, 55, 0.24);
+    }
+
+    body.theme-sepia {
+      --page-bg: #f3e7cf;
+      --page-card: #f8eed9;
+      --page-text: #2a2013;
+      --page-border: #b89021;
+      --ayah-highlight: rgba(184, 144, 33, 0.25);
+    }
+
+    body.theme-night {
+      --page-bg: #0c1714;
+      --page-card: #12221e;
+      --page-text: #f3efe4;
+      --page-border: #b89021;
+      --ayah-highlight: rgba(212, 175, 55, 0.22);
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: var(--page-bg);
+      color: var(--page-text);
+      transition: background-color 0.35s ease, color 0.35s ease;
+      overflow-x: hidden;
+    }
+
+    /* 3D Hardbound Book Cover Perspective */
+    .book-stage {
+      perspective: 2200px;
+    }
+
+    .book-cover-wrapper {
+      transform-style: preserve-3d;
+      transform-origin: right center; /* RTL Spine on the right */
+      transition: transform 1.25s cubic-bezier(0.25, 0.85, 0.3, 1), opacity 0.9s ease 0.45s;
+    }
+
+    .book-cover-wrapper.opened {
+      transform: rotateY(155deg) scale(1.03);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Ornate Islamic Geometric Leather Pattern */
+    .islamic-leather-bg {
+      background-color: #062b21;
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.14) 0%, transparent 65%),
+        repeating-linear-gradient(45deg, rgba(212, 175, 55, 0.06) 0px, rgba(212, 175, 55, 0.06) 2px, transparent 2px, transparent 18px),
+        repeating-linear-gradient(-45deg, rgba(212, 175, 55, 0.06) 0px, rgba(212, 175, 55, 0.06) 2px, transparent 2px, transparent 18px);
+      box-shadow:
+        inset 0 0 55px rgba(0, 0, 0, 0.72),
+        inset -16px 0 26px rgba(0, 0, 0, 0.65),
+        0 28px 65px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Book Spine Ribbing on Right Edge */
+    .book-spine-ribs {
+      background: linear-gradient(
+        to left,
+        #031812 0%,
+        #0b4636 30%,
+        #042119 65%,
+        #02120e 100%
+      );
+      border-left: 2px solid rgba(212, 175, 55, 0.55);
+    }
+
+    /* Gilded Mushaf Page Frame */
+    .mushaf-page-frame {
+      background-color: var(--page-card);
+      border: 2px solid var(--page-border);
+      box-shadow:
+        0 12px 38px rgba(0, 0, 0, 0.09),
+        inset 0 0 0 5px var(--page-card),
+        inset 0 0 0 7px rgba(212, 175, 55, 0.48);
+      transition: background-color 0.35s ease, transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    /* Page flip transition animation */
+    @keyframes pageTurnIn {
+      0% {
+        opacity: 0.25;
+        transform: perspective(1400px) rotateY(-10deg) translateX(-12px);
+      }
+      100% {
+        opacity: 1;
+        transform: perspective(1400px) rotateY(0deg) translateX(0);
+      }
+    }
+
+    .page-turn-anim {
+      animation: pageTurnIn 0.45s ease-out;
+    }
+
+    /* Quran Text Styling - Strict Read-Only & Clear Naskh */
+    .quran-script {
+      font-family: var(--quran-font);
+      font-size: var(--quran-size);
+      line-height: 2.35;
+      letter-spacing: 0;
+      word-spacing: 2px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .ayah-span {
+      border-radius: 0.5rem;
+      padding: 0.1rem 0.25rem;
+      transition: background-color 0.25s ease;
+      cursor: pointer;
+    }
+
+    .ayah-span:hover {
+      background-color: rgba(212, 175, 55, 0.14);
+    }
+
+    .ayah-span.active-ayah {
+      background-color: var(--ayah-highlight);
+      box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.55);
+    }
+
+    .ayah-medallion {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Amiri', serif;
+      font-size: 0.82em;
+      color: #b89021;
+      margin: 0 0.22em;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    /* Silk Bookmark Ribbon */
+    .bookmark-ribbon {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(184, 144, 33, 0.45);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Non-blocking Toast Banner -->
+  <div
+    id="toastAlert"
+    role="status"
+    aria-live="polite"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] hidden w-[92%] max-w-md transition-all"
+  >
+    <div class="rounded-2xl bg-emeraldBook-950 text-goldLeaf-200 border border-goldLeaf-400/60 px-4 py-3 shadow-2xl flex items-center justify-between gap-3 text-sm font-semibold">
+      <span id="toastMessage"></span>
+      <button type="button" id="toastCloseBtn" class="text-goldLeaf-300 hover:text-white px-1.5 py-0.5 rounded-lg">✕</button>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       3D HARDBOUND MUSHAF COVER OVERLAY (مجلد المصحف الشريف)
+       ========================================================= -->
+  <div
+    id="coverOverlay"
+    class="fixed inset-0 z-50 book-stage bg-emeraldBook-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+  >
+    <div
+      id="bookCoverCard"
+      class="book-cover-wrapper relative w-full max-w-lg min-h-[84vh] sm:min-h-[82vh] rounded-l-3xl rounded-r-xl islamic-leather-bg border-2 border-goldLeaf-400/75 flex overflow-hidden"
+    >
+      <!-- Right-side Hardbound Book Spine -->
+      <div class="book-spine-ribs w-7 sm:w-10 shrink-0 flex flex-col justify-between py-10 items-center">
+        <span class="w-full h-1.5 bg-goldLeaf-400/60"></span>
+        <span class="w-full h-1.5 bg-goldLeaf-400/60"></span>
+        <span class="w-full h-1.5 bg-goldLeaf-400/60"></span>
+        <span class="w-full h-1.5 bg-goldLeaf-400/60"></span>
+      </div>
+
+      <!-- Front Gold-Embossed Cover Face -->
+      <div class="flex-1 p-5 sm:p-8 flex flex-col justify-between items-center text-center relative">
+        <!-- Double Gilded Inner Border -->
+        <div class="absolute inset-3 sm:inset-4 rounded-2xl border-2 border-goldLeaf-400/65 pointer-events-none"></div>
+        <div class="absolute inset-5 sm:inset-6 rounded-xl border border-goldLeaf-300/35 pointer-events-none"></div>
+
+        <!-- Corner Gold Medallions -->
+        <div class="w-full flex justify-between text-goldLeaf-400 text-lg px-2 pt-1 opacity-85">
+          <span>۞</span>
+          <span>۞</span>
+        </div>
+
+        <!-- Center Medallion & Title -->
+        <div class="my-auto space-y-5 px-2 z-10">
+          <p class="text-goldLeaf-300 text-xs sm:text-sm tracking-wide font-semibold">
+            ﴿ إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ ﴾
+          </p>
+
+          <!-- Ornate Islamic Octagram Frame -->
+          <div class="mx-auto w-56 sm:w-64 py-7 px-5 rounded-3xl border-2 border-goldLeaf-400 bg-emeraldBook-950/75 shadow-2xl shadow-black/50 space-y-2 relative">
+            <div class="text-goldLeaf-400 text-2xl">﷽</div>
+            <h1 class="font-amiri text-3xl sm:text-4xl font-bold text-goldLeaf-200 tracking-normal">
+              القرآن الكريم
+            </h1>
+            <div class="h-px w-28 mx-auto bg-gradient-to-r from-transparent via-goldLeaf-400 to-transparent"></div>
+            <p class="text-xs sm:text-sm text-goldLeaf-300/90 font-semibold">
+              كاملاً من سورة الفاتحة إلى سورة الناس
+            </p>
+            <p class="text-[11px] text-emerald-200/75">
+              خط نسخ واضح وميسّر للقراءة • نص محمي بالكامل
+            </p>
+          </div>
+
+          <!-- Saved Bookmark Resume Hint -->
+          <div id="coverBookmarkHint" class="hidden text-xs text-goldLeaf-200 bg-emeraldBook-900/80 border border-goldLeaf-400/40 rounded-2xl px-4 py-2">
+            آخر موضع توقفت عنده: <span id="coverBookmarkText" class="font-bold underline"></span>
+          </div>
+
+          <!-- Open Book Action Button -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              id="openMushafBtn"
+              class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-b from-goldLeaf-300 via-goldLeaf-400 to-goldLeaf-500 text-emeraldBook-950 font-extrabold text-base sm:text-lg shadow-xl shadow-black/40 hover:brightness-105 active:scale-95 transition flex items-center justify-center gap-2.5"
+            >
+              <span>📖</span>
+              <span>افتح المصحف الشريف</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Cover Footer -->
+        <div class="w-full flex justify-between items-center text-goldLeaf-400 text-lg px-2 pb-1 opacity-85">
+          <span>۞</span>
+          <span class="text-[11px] font-cairo text-goldLeaf-300/80">١١٤ سورة • ٣٠ جزءاً • ٦٢٣٦ آية</span>
+          <span>۞</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SURAH & JUZ NAVIGATION DRAWER (فهرس السور والأجزاء)
+       ========================================================= -->
+  <div
+    id="indexDrawerBackdrop"
+    class="fixed inset-0 z-40 bg-black/55 backdrop-blur-xs hidden transition-opacity"
+  ></div>
+
+  <aside
+    id="indexDrawer"
+    aria-label="فهرس سور القرآن الكريم"
+    class="fixed top-0 right-0 z-50 h-full w-[88%] max-w-md bg-emeraldBook-950 text-parchment-50 border-l-2 border-goldLeaf-400/60 shadow-2xl translate-x-full transition-transform duration-300 flex flex-col"
+  >
+    <!-- Drawer Header -->
+    <div class="p-4 border-b border-goldLeaf-400/30 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-extrabold text-goldLeaf-300">فهرس المصحف الشريف</h2>
+        <p class="text-xs text-emerald-200/80">اختر السورة أو الجزء للانتقال المباشر</p>
+      </div>
+      <button
+        type="button"
+        id="closeIndexBtn"
+        class="p-2.5 rounded-xl bg-emeraldBook-900 hover:bg-emeraldBook-800 text-goldLeaf-200 transition"
+        aria-label="إغلاق الفهرس"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Search Input & Juz Quick Jump -->
+    <div class="p-3.5 space-y-2.5 border-b border-goldLeaf-400/20 bg-emeraldBook-900/50">
+      <input
+        type="search"
+        id="surahSearchInput"
+        placeholder="ابحث باسم السورة (مثال: البقرة، الكهف، يس، الملك)..."
+        class="w-full rounded-xl bg-emeraldBook-950 border border-goldLeaf-400/40 px-3.5 py-2.5 text-sm text-white placeholder-emerald-300/50 focus:outline-none focus:ring-2 focus:ring-goldLeaf-400"
+      />
+
+      <div class="flex items-center gap-2">
+        <label for="juzSelect" class="text-xs font-bold text-goldLeaf-300 shrink-0">انتقال سريع للجزء:</label>
+        <select
+          id="juzSelect"
+          class="flex-1 rounded-xl bg-emeraldBook-950 border border-goldLeaf-400/40 px-3 py-2 text-xs sm:text-sm text-goldLeaf-200 focus:outline-none focus:ring-2 focus:ring-goldLeaf-400"
+        >
+          <option value="">-- اختر الجزء (١ إلى ٣٠) --</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Surah List Container -->
+    <div id="surahListContainer" class="flex-1 overflow-y-auto p-3 space-y-1.5">
+      <!-- Populated dynamically with all 114 Surahs -->
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       TOP MUSHAF TOOLBAR & KHATMAH TRACKER
+       ========================================================= -->
+  <header class="sticky top-0 z-30 bg-emeraldBook-950/95 backdrop-blur-md text-parchment-50 border-b border-goldLeaf-400/45 shadow-lg">
+    <div class="max-w-4xl mx-auto px-3 sm:px-5 py-2.5 space-y-2">
+      <!-- Primary Controls Row -->
+      <div class="flex items-center justify-between gap-2">
+        <!-- Right Group: Index & Close Cover -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button
+            type="button"
+            id="openIndexBtn"
+            class="px-3 py-2 rounded-xl bg-emeraldBook-800 hover:bg-emeraldBook-700 text-goldLeaf-200 border border-goldLeaf-400/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition active:scale-95"
+          >
+            <span>📑</span>
+            <span>الفهرس (١١٤)</span>
+          </button>
+
+          <button
+            type="button"
+            id="closeCoverBtn"
+            title="إغلاق غلاف المصحف"
+            class="px-2.5 py-2 rounded-xl bg-emeraldBook-900 hover:bg-emeraldBook-800 text-emerald-200 border border-emeraldBook-700 text-xs font-semibold transition active:scale-95"
+          >
+            📕 الغلاف
+          </button>
+        </div>
+
+        <!-- Center Current Surah Title -->
+        <div class="text-center truncate px-1">
+          <div class="text-xs sm:text-sm font-extrabold text-goldLeaf-300 truncate" id="headerSurahTitle">
+            سورة الفاتحة
+          </div>
+          <div class="text-[10px] sm:text-xs text-emerald-200/80" id="headerSurahMeta">
+            الجزء ١ • مكية • ٧ آيات
+          </div>
+        </div>
+
+        <!-- Left Group: Read-Only Lock Badge & Bookmark -->
+        <div class="flex items-center gap-1.5">
+          <span
+            title="النص القرآني محمي ضد التعديل أو التحريف"
+            class="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-900/90 border border-goldLeaf-400/35 text-[11px] text-goldLeaf-200 font-bold"
+          >
+            <span>🛡️</span>
+            <span>نص محمي</span>
+          </span>
+
+          <button
+            type="button"
+            id="saveBookmarkBtn"
+            class="px-3 py-2 rounded-xl bg-goldLeaf-500/20 hover:bg-goldLeaf-500/30 text-goldLeaf-200 border border-goldLeaf-400/50 text-xs font-bold flex items-center gap-1 transition active:scale-95"
+          >
+            <span>🔖</span>
+            <span class="hidden sm:inline">حفظ العلامة</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Secondary Display & Khatmah Progress Row -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-goldLeaf-400/20 text-xs">
+        <!-- Font Style (Non-Ruq'ah Naskh Options) & Size -->
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            id="fontToggleBtn"
+            class="px-2.5 py-1 rounded-lg bg-emeraldBook-900 hover:bg-emeraldBook-800 border border-goldLeaf-400/30 text-goldLeaf-200 font-semibold transition"
+          >
+            الخط: نسخ واضح
+          </button>
+          <button
+            type="button"
+            id="fontDecBtn"
+            aria-label="تصغير الخط"
+            class="w-7 h-7 rounded-lg bg-emeraldBook-900 hover:bg-emeraldBook-800 border border-goldLeaf-400/30 text-goldLeaf-200 font-bold"
+          >
+            أ-
+          </button>
+          <button
+            type="button"
+            id="fontIncBtn"
+            aria-label="تكبير الخط"
+            class="w-7 h-7 rounded-lg bg-emeraldBook-900 hover:bg-emeraldBook-800 border border-goldLeaf-400/30 text-goldLeaf-200 font-bold"
+          >
+            أ+
+          </button>
+        </div>
+
+        <!-- Theme Switcher (Parchment / Sepia / Night) -->
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            data-theme="parchment"
+            class="theme-btn px-2 py-1 rounded-lg bg-parchment-100 text-emeraldBook-950 font-bold border border-goldLeaf-400"
+          >
+            ورقي
+          </button>
+          <button
+            type="button"
+            data-theme="sepia"
+            class="theme-btn px-2 py-1 rounded-lg bg-[#e8d5b0] text-[#2a2013] font-bold opacity-80 hover:opacity-100"
+          >
+            دافئ
+          </button>
+          <button
+            type="button"
+            data-theme="night"
+            class="theme-btn px-2 py-1 rounded-lg bg-emeraldBook-900 text-goldLeaf-200 font-bold border border-goldLeaf-400/40 opacity-80 hover:opacity-100"
+          >
+            ليلي
+          </button>
+        </div>
+
+        <!-- Khatmah Completion Progress -->
+        <div class="flex items-center gap-2 min-w-[145px] sm:min-w-[190px]">
+          <span class="text-[11px] text-emerald-200 font-semibold shrink-0">الختمة:</span>
+          <div class="flex-1 h-2 rounded-full bg-emeraldBook-900 overflow-hidden border border-goldLeaf-400/30">
+            <div id="khatmahProgressBar" class="h-full bg-gradient-to-l from-goldLeaf-300 to-goldLeaf-500 w-0 transition-all duration-500"></div>
+          </div>
+          <span id="khatmahPercentText" class="text-[11px] font-bold text-goldLeaf-300 tabular-nums">٠٪</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       MAIN MUSHAF READING PAGE AREA (صفحة المصحف الشريف)
+       ========================================================= -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-6 pt-5 pb-40">
+    <!-- Loading State -->
+    <div id="loadingBox" class="mushaf-page-frame rounded-3xl p-8 sm:p-12 text-center space-y-4">
+      <div class="w-14 h-14 mx-auto rounded-full border-4 border-goldLeaf-400 border-t-emeraldBook-800 animate-spin"></div>
+      <h2 class="text-xl font-extrabold text-emeraldBook-900 dark:text-goldLeaf-300">
+        جاري تحميل المصحف الشريف كاملاً...
+      </h2>
+      <p class="text-sm opacity-75">
+        يتم الآن تجهيز ١١٤ سورة (٦٢٣٦ آية) بخط نسخ واضح وميسّر للقراءة
+      </p>
+    </div>
+
+    <!-- Error / Retry State -->
+    <div id="errorBox" class="hidden mushaf-page-frame rounded-3xl p-8 text-center space-y-4">
+      <div class="text-4xl">⚠️</div>
+      <h2 class="text-lg font-extrabold text-red-700">تعذر الاتصال بخادم المصحف حالياً</h2>
+      <p class="text-sm opacity-80 max-w-md mx-auto">
+        تأكد من اتصالك بالإنترنت لتحميل جميع سور القرآن الكريم كاملة من سورة الفاتحة إلى سورة الناس.
+      </p>
+      <button
+        type="button"
+        id="retryLoadBtn"
+        class="px-6 py-2.5 rounded-2xl bg-emeraldBook-800 hover:bg-emeraldBook-700 text-goldLeaf-200 font-bold shadow transition"
+      >
+        إعادة المحاولة الآن
+      </button>
+    </div>
+
+    <!-- Active Surah Page Container -->
+    <article
+      id="mushafPageArticle"
+      class="hidden mushaf-page-frame rounded-3xl p-4 sm:p-8 md:p-10 relative overflow-hidden"
+    >
+      <!-- Silk Bookmark Ribbon Visual -->
+      <div
+        id="silkRibbon"
+        title="فاصل القراءة المحفوظ"
+        class="hidden bookmark-ribbon absolute top-0 left-6 sm:left-10 w-7 h-14 bg-gradient-to-b from-red-800 to-red-600 shadow-md z-10 flex items-start justify-center pt-2 text-goldLeaf-200 text-xs"
+      >
+        ★
+      </div>
+
+      <!-- Ornate Surah Header Banner -->
+      <div class="rounded-2xl border-2 border-goldLeaf-400/80 bg-gradient-to-r from-emeraldBook-950 via-emeraldBook-900 to-emeraldBook-950 text-goldLeaf-200 p-4 sm:p-5 text-center shadow-md mb-6 relative">
+        <div class="flex items-center justify-between text-xs sm:text-sm text-goldLeaf-300/90 font-bold mb-1">
+          <span id="bannerSurahNumber">سورة رقم ١</span>
+          <span id="bannerJuzInfo">الجزء ١</span>
+          <span id="bannerAyahCount">٧ آيات</span>
+        </div>
+        <h2 id="bannerSurahName" class="font-amiri text-2xl sm:text-4xl font-bold text-goldLeaf-200">
+          سُورَةُ الْفَاتِحَةِ
+        </h2>
+      </div>
+
+      <!-- Bismillah Banner (Shown for all Surahs except Al-Fatihah [already Ayah 1] and At-Tawbah [9]) -->
+      <div
+        id="bismillahHeader"
+        class="text-center font-amiri text-2xl sm:text-3xl font-bold text-goldLeaf-600 dark:text-goldLeaf-300 mb-6 select-none"
+      >
+        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+      </div>
+
+      <!-- Protected Read-Only Quranic Verses Container -->
+      <div
+        id="quranVersesContainer"
+        data-protected-quran="true"
+        contenteditable="false"
+        spellcheck="false"
+        class="quran-script text-justify leading-loose"
+      >
+        <!-- Ayahs injected and frozen via MutationObserver -->
+      </div>
+
+      <!-- End of Surah Ornament & Next/Prev Surah Navigation -->
+      <div class="mt-8 pt-6 border-t border-goldLeaf-400/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <button
+          type="button"
+          id="prevSurahBtn"
+          class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emeraldBook-900 hover:bg-emeraldBook-800 disabled:opacity-40 text-goldLeaf-200 font-bold text-sm flex items-center justify-center gap-2 transition active:scale-95"
+        >
+          <span>→</span>
+          <span id="prevSurahLabel">السورة السابقة</span>
+        </button>
+
+        <div class="text-center">
+          <span class="text-goldLeaf-600 font-amiri text-lg font-bold">صدق الله العظيم</span>
+        </div>
+
+        <button
+          type="button"
+          id="nextSurahBtn"
+          class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-b from-goldLeaf-400 to-goldLeaf-500 hover:brightness-105 disabled:opacity-40 text-emeraldBook-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow transition active:scale-95"
+        >
+          <span id="nextSurahLabel">السورة التالية</span>
+          <span>←</span>
+        </button>
+      </div>
+    </article>
+  </main>
+
+  <!-- =========================================================
+       HEAVENLY AUDIO RECITATION BAR (شريط التلاوة الصوتية الخاشعة)
+       ========================================================= -->
+  <footer class="fixed bottom-0 inset-x-0 z-30 bg-emeraldBook-950/95 backdrop-blur-md text-parchment-50 border-t-2 border-goldLeaf-400/60 shadow-2xl">
+    <div class="max-w-4xl mx-auto px-3 sm:px-5 py-2.5 sm:py-3 space-y-2">
+      <!-- Top Row: Reciter Selector & Ambient Serenity Sound Toggle -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+          <label for="reciterSelect" class="text-goldLeaf-300 font-bold shrink-0">🎙️ القارئ:</label>
+          <select
+            id="reciterSelect"
+            class="flex-1 max-w-xs rounded-xl bg-emeraldBook-900 border border-goldLeaf-400/40 px-2.5 py-1.5 text-xs sm:text-sm text-goldLeaf-200 font-semibold focus:outline-none focus:ring-2 focus:ring-goldLeaf-400"
+          >
+            <option value="ar.alafasy">مشاري راشد العفاسي (صوت عذب وخاشع)</option>
+            <option value="ar.abdulbasitmurattal">عبد الباسط عبد الصمد (مرتل)</option>
+            <option value="ar.husary">محمود خليل الحصري (المصحف المعلم)</option>
+            <option value="ar.mahermuaiqly">ماهر المعيقلي (تلاوة الحرم المكي)</option>
+            <option value="ar.minshawi">محمد صديق المنشاوي (تلاوة خاشعة)</option>
+          </select>
+        </div>
+
+        <!-- Gentle Serene Breeze Ambient Synthesizer Toggle -->
+        <button
+          type="button"
+          id="ambientToggleBtn"
+          class="px-3 py-1.5 rounded-xl bg-emeraldBook-900 hover:bg-emeraldBook-800 border border-goldLeaf-400/35 text-emerald-200 font-semibold flex items-center gap-1.5 transition"
+        >
+          <span>🌿</span>
+          <span id="ambientStatusText">نسيم هادئ: مغلق</span>
+        </button>
+      </div>
+
+      <!-- Bottom Row: Playback Controls & Current Ayah Status -->
+      <div class="flex items-center justify-between gap-3">
+        <!-- Playback Buttons -->
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="prevAyahAudioBtn"
+            title="الآية السابقة"
+            class="w-9 h-9 rounded-full bg-emeraldBook-900 hover:bg-emeraldBook-800 text-goldLeaf-200 border border-goldLeaf-400/35 flex items-center justify-center text-sm transition active:scale-95"
+          >
+            ⏮
+          </button>
+
+          <button
+            type="button"
+            id="playPauseAudioBtn"
+            aria-label="تشغيل أو إيقاف التلاوة"
+            class="w-11 h-11 rounded-full bg-gradient-to-b from-goldLeaf-300 to-goldLeaf-500 text-emeraldBook-950 font-extrabold text-lg shadow-lg flex items-center justify-center hover:brightness-105 transition active:scale-95"
+          >
+            <span id="playPauseAudioIcon">▶</span>
+          </button>
+
+          <button
+            type="button"
+            id="nextAyahAudioBtn"
+            title="الآية التالية"
+            class="w-9 h-9 rounded-full bg-emeraldBook-900 hover:bg-emeraldBook-800 text-goldLeaf-200 border border-goldLeaf-400/35 flex items-center justify-center text-sm transition active:scale-95"
+          >
+            ⏭
+          </button>
+        </div>
+
+        <!-- Now Reciting Info -->
+        <div class="flex-1 min-w-0 text-right">
+          <div id="nowPlayingTitle" class="text-xs sm:text-sm font-bold text-goldLeaf-200 truncate">
+            اضغط تشغيل للاستماع إلى التلاوة المباركة
+          </div>
+          <div id="nowPlayingSub" class="text-[11px] text-emerald-200/80 truncate">
+            يمكنك أيضاً الضغط على أي آية لبدء التلاوة منها مباشرة
+          </div>
+        </div>
+
+        <!-- Continuous Surah Auto-Advance Toggle -->
+        <button
+          type="button"
+          id="autoContinueBtn"
+          class="px-2.5 py-1.5 rounded-xl bg-goldLeaf-500/20 border border-goldLeaf-400/50 text-goldLeaf-200 text-[11px] font-bold shrink-0"
+        >
+          تلاوة متواصلة ✓
+        </button>
+      </div>
+    </div>
+    <audio id="quranAudioElement" preload="auto"></audio>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ============================================================
+      // 1. CONSTANTS & STORAGE KEYS
+      // ============================================================
+      const QURAN_API_URL = 'https://api.alquran.cloud/v1/quran/quran-simple-clean';
+      const AUDIO_CDN_BASE = 'https://cdn.islamic.network/quran/audio/128';
+
+      const STORAGE_KEYS = {
+        BOOKMARK: 'mushaf_khatmah_bookmark_v1',
+        VISITED_SURAHS: 'mushaf_visited_surahs_v1',
+        THEME: 'mushaf_reading_theme_v1',
+        FONT_SIZE: 'mushaf_font_size_v1',
+        FONT_FAMILY: 'mushaf_font_family_v1',
+        RECITER: 'mushaf_reciter_v1',
+      };
+
+      // Standard 30 Juz starting points (Surah, Ayah)
+      const JUZ_START_MAP = [
+        { juz: 1, surah: 1, ayah: 1, name: 'الجزء الأول (آلم)' },
+        { juz: 2, surah: 2, ayah: 142, name: 'الجزء الثاني (سيقول)' },
+        { juz: 3, surah: 2, ayah: 253, name: 'الجزء الثالث (تلك الرسل)' },
+        { juz: 4, surah: 3, ayah: 93, name: 'الجزء الرابع (لن تنالوا)' },
+        { juz: 5, surah: 4, ayah: 24, name: 'الجزء الخامس (والمحصنات)' },
+        { juz: 6, surah: 4, ayah: 148, name: 'الجزء السادس (لا يحب الله)' },
+        { juz: 7, surah: 5, ayah: 82, name: 'الجزء السابع (وإذا سمعوا)' },
+        { juz: 8, surah: 6, ayah: 111, name: 'الجزء الثامن (ولو أننا)' },
+        { juz: 9, surah: 7, ayah: 88, name: 'الجزء التاسع (قال الملأ)' },
+        { juz: 10, surah: 8, ayah: 41, name: 'الجزء العاشر (واعلموا)' },
+        { juz: 11, surah: 9, ayah: 93, name: 'الجزء الحادي عشر (يعتذرون)' },
+        { juz: 12, surah: 11, ayah: 6, name: 'الجزء الثاني عشر (وما من دابة)' },
+        { juz: 13, surah: 12, ayah: 53, name: 'الجزء الثالث عشر (وما أبرئ)' },
+        { juz: 14, surah: 15, ayah: 1, name: 'الجزء الرابع عشر (ربما)' },
+        { juz: 15, surah: 17, ayah: 1, name: 'الجزء الخامس عشر (سبحان الذي)' },
+        { juz: 16, surah: 18, ayah: 75, name: 'الجزء السادس عشر (قال ألم)' },
+        { juz: 17, surah: 21, ayah: 1, name: 'الجزء السابع عشر (اقترب)' },
+        { juz: 18, surah: 23, ayah: 1, name: 'الجزء الثامن عشر (قد أفلح)' },
+        { juz: 19, surah: 25, ayah: 21, name: 'الجزء التاسع عشر (وقال الذين)' },
+        { juz: 20, surah: 27, ayah: 56, name: 'الجزء العشرون (أمن خلق)' },
+        { juz: 21, surah: 29, ayah: 46, name: 'الجزء الحادي والعشرون (اتل ما أوحي)' },
+        { juz: 22, surah: 33, ayah: 31, name: 'الجزء الثاني والعشرون (ومن يقنت)' },
+        { juz: 23, surah: 36, ayah: 28, name: 'الجزء الثالث والعشرون (وما أنزلنا)' },
+        { juz: 24, surah: 39, ayah: 32, name: 'الجزء الرابع والعشرون (فمن أظلم)' },
+        { juz: 25, surah: 41, ayah: 47, name: 'الجزء الخامس والعشرون (إليه يرد)' },
+        { juz: 26, surah: 46, ayah: 1, name: 'الجزء السادس والعشرون (حم)' },
+        { juz: 27, surah: 51, ayah: 31, name: 'الجزء السابع والعشرون (قال فما خطبكم)' },
+        { juz: 28, surah: 58, ayah: 1, name: 'الجزء الثامن والعشرون (قد سمع الله)' },
+        { juz: 29, surah: 67, ayah: 1, name: 'الجزء التاسع والعشرون (تبارك الذي)' },
+        { juz: 30, surah: 78, ayah: 1, name: 'الجزء الثلاثون (عم يتساءلون)' },
+      ];
+
+      // ============================================================
+      // 2. APPLICATION STATE
+      // ============================================================
+      const state = {
+        surahs: [], // All 114 Surahs loaded from API
+        currentSurahNumber: 1,
+        currentAyahIndexInSurah: 0, // 0-based index within current Surah
+        isPlaying: false,
+        autoContinue: true,
+        reciter: 'ar.alafasy',
+        theme: 'parchment',
+        fontSizeRem: 1.55,
+        fontMode: 'naskh', // 'naskh' (Noto Naskh Arabic) or 'amiri' (Amiri Naskh)
+        bookmark: { surah: 1, ayahInSurah: 1 },
+        visitedSurahs: new Set([1]),
+        isAuthorizedRender: false, // Flag used by MutationObserver anti-tamper guard
+        canonicalSurahSnapshot: '', // Immutable canonical text verification
+      };
+
+      // ============================================================
+      // 3. DOM REFERENCES
+      // ============================================================
+      const coverOverlay = document.getElementById('coverOverlay');
+      const bookCoverCard = document.getElementById('bookCoverCard');
+      const openMushafBtn = document.getElementById('openMushafBtn');
+      const closeCoverBtn = document.getElementById('closeCoverBtn');
+      const coverBookmarkHint = document.getElementById('coverBookmarkHint');
+      const coverBookmarkText = document.getElementById('coverBookmarkText');
+
+      const indexDrawer = document.getElementById('indexDrawer');
+      const indexDrawerBackdrop = document.getElementById('indexDrawerBackdrop');
+      const openIndexBtn = document.getElementById('openIndexBtn');
+      const closeIndexBtn = document.getElementById('closeIndexBtn');
+      const surahSearchInput = document.getElementById('surahSearchInput');
+      const juzSelect = document.getElementById('juzSelect');
+      const surahListContainer = document.getElementById('surahListContainer');
+
+      const headerSurahTitle = document.getElementById('headerSurahTitle');
+      const headerSurahMeta = document.getElementById('headerSurahMeta');
+      const saveBookmarkBtn = document.getElementById('saveBookmarkBtn');
+      const silkRibbon = document.getElementById('silkRibbon');
+
+      const fontToggleBtn = document.getElementById('fontToggleBtn');
+      const fontDecBtn = document.getElementById('fontDecBtn');
+      const fontIncBtn = document.getElementById('fontIncBtn');
+      const themeButtons = document.querySelectorAll('.theme-btn');
+      const khatmahProgressBar = document.getElementById('khatmahProgressBar');
+      const khatmahPercentText = document.getElementById('khatmahPercentText');
+
+      const loadingBox = document.getElementById('loadingBox');
+      const errorBox = document.getElementById('errorBox');
+      const retryLoadBtn = document.getElementById('retryLoadBtn');
+      const mushafPageArticle = document.getElementById('mushafPageArticle');
+      const bannerSurahNumber = document.getElementById('bannerSurahNumber');
+      const bannerJuzInfo = document.getElementById('bannerJuzInfo');
+      const bannerAyahCount = document.getElementById('bannerAyahCount');
+      const bannerSurahName = document.getElementById('bannerSurahName');
+      const bismillahHeader = document.getElementById('bismillahHeader');
+      const quranVersesContainer = document.getElementById('quranVersesContainer');
+      const prevSurahBtn = document.getElementById('prevSurahBtn');
+      const prevSurahLabel = document.getElementById('prevSurahLabel');
+      const nextSurahBtn = document.getElementById('nextSurahBtn');
+      const nextSurahLabel = document.getElementById('nextSurahLabel');
+
+      const reciterSelect = document.getElementById('reciterSelect');
+      const ambientToggleBtn = document.getElementById('ambientToggleBtn');
+      const ambientStatusText = document.getElementById('ambientStatusText');
+      const prevAyahAudioBtn = document.getElementById('prevAyahAudioBtn');
+      const playPauseAudioBtn = document.getElementById('playPauseAudioBtn');
+      const playPauseAudioIcon = document.getElementById('playPauseAudioIcon');
+      const nextAyahAudioBtn = document.getElementById('nextAyahAudioBtn');
+      const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+      const nowPlayingSub = document.getElementById('nowPlayingSub');
+      const autoContinueBtn = document.getElementById('autoContinueBtn');
+      const quranAudioElement = document.getElementById('quranAudioElement');
+
+      const toastAlert = document.getElementById('toastAlert');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastCloseBtn = document.getElementById('toastCloseBtn');
+      let toastTimer = null;
+
+      // ============================================================
+      // 4. ARABIC NUMERAL & HELPER UTILITIES
+      // ============================================================
+      function toArabicDigits(num) {
+        const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        return String(num).replace(/\d/g, (d) => arabicNums[Number(d)]);
+      }
+
+      function showToast(msg) {
+        if (!toastAlert || !toastMessage) return;
+        toastMessage.textContent = msg;
+        toastAlert.classList.remove('hidden');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastAlert.classList.add('hidden');
+        }, 3200);
+      }
+
+      function normalizeArabicSearch(str) {
+        return (str || '')
+          .replace(/[\u064B-\u065F\u0670]/g, '') // remove tashkeel
+          .replace(/[أإآ]/g, 'ا')
+          .replace(/ة/g, 'ه')
+          .replace(/ى/g, 'ي')
+          .replace(/^سورة\s+/g, '')
+          .trim();
+      }
+
+      // ============================================================
+      // 5. STRICT ANTI-TAMPERING & READ-ONLY PROTECTION
+      // ============================================================
+      function installQuranIntegrityGuard() {
+        if (!quranVersesContainer) return;
+
+        // Block right-click context menu on Quran text
+        quranVersesContainer.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          showToast('النص القرآني محمي ولا يمكن التعديل عليه 🛡️');
+        });
+
+        // Block cut, paste, drop, beforeinput, keydown editing attempts
+        ['cut', 'paste', 'drop', 'beforeinput'].forEach((evtName) => {
+          quranVersesContainer.addEventListener(evtName, (e) => {
+            e.preventDefault();
+            showToast('تم منع أي محاولة لتعديل النص القرآني 🛡️');
+          });
+        });
+
+        // MutationObserver to immediately restore canonical Quran text if tampered via DevTools
+        const observer = new MutationObserver(() => {
+          if (state.isAuthorizedRender) return;
+          const currentRendered = quranVersesContainer.textContent || '';
+          if (state.canonicalSurahSnapshot && currentRendered !== state.canonicalSurahSnapshot) {
+            renderSurahPage(state.currentSurahNumber, state.currentAyahIndexInSurah, false);
+            showToast('تمت استعادة النص القرآني الصحيح تلقائياً 🛡️');
+          }
+        });
+
+        observer.observe(quranVersesContainer, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true,
+          attributeFilter: ['contenteditable'],
+        });
+      }
+
+      // ============================================================
+      // 6. GENTLE AMBIENT SERENE BREEZE SYNTHESIZER (WEB AUDIO API)
+      // ============================================================
+      let audioCtx = null;
+      let ambientGain = null;
+      let isAmbientOn = false;
+
+      function toggleAmbientBreeze() {
+        try {
+          if (!isAmbientOn) {
+            if (!audioCtx) {
+              const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+              audioCtx = new AudioContextClass();
+
+              // Create soft filtered pink-like noise for a serene, gentle breeze
+              const bufferSize = 2 * audioCtx.sampleRate;
+              const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+              const output = noiseBuffer.getChannelData(0);
+              let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+
+              for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                output[i] *= 0.04;
+                b6 = white * 0.115926;
+              }
+
+              const whiteNoise = audioCtx.createBufferSource();
+              whiteNoise.buffer = noiseBuffer;
+              whiteNoise.loop = true;
+
+              const lowpass = audioCtx.createBiquadFilter();
+              lowpass.type = 'lowpass';
+              lowpass.frequency.value = 340;
+
+              ambientGain = audioCtx.createGain();
+              ambientGain.gain.value = 0.001;
+
+              whiteNoise.connect(lowpass);
+              lowpass.connect(ambientGain);
+              ambientGain.connect(audioCtx.destination);
+              whiteNoise.start(0);
+            }
+
+            if (audioCtx.state === 'suspended') {
+              audioCtx.resume();
+            }
+            ambientGain.gain.setTargetAtTime(0.14, audioCtx.currentTime, 0.6);
+            isAmbientOn = true;
+            ambientStatusText.textContent = 'نسيم هادئ: يعمل';
+            ambientToggleBtn.classList.add('border-goldLeaf-400', 'text-goldLeaf-200');
+          } else {
+            if (ambientGain && audioCtx) {
+              ambientGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.4);
+            }
+            isAmbientOn = false;
+            ambientStatusText.textContent = 'نسيم هادئ: مغلق';
+            ambientToggleBtn.classList.remove('border-goldLeaf-400', 'text-goldLeaf-200');
+          }
+        } catch (err) {
+          showToast('تعذر تشغيل الصوت المحيطي في هذا المتصفح');
+        }
+      }
+
+      // ============================================================
+      // 7. PERSISTENT PREFERENCES & KHATMAH TRACKING
+      // ============================================================
+      function loadSavedPreferences() {
+        try {
+          const savedBookmark = localStorage.getItem(STORAGE_KEYS.BOOKMARK);
+          if (savedBookmark) {
+            const parsed = JSON.parse(savedBookmark);
+            if (parsed && parsed.surah >= 1 && parsed.surah <= 114) {
+              state.bookmark = parsed;
+              state.currentSurahNumber = parsed.surah;
+              state.currentAyahIndexInSurah = Math.max(0, (parsed.ayahInSurah || 1) - 1);
+            }
+          }
+
+          const savedVisited = localStorage.getItem(STORAGE_KEYS.VISITED_SURAHS);
+          if (savedVisited) {
+            const arr = JSON.parse(savedVisited);
+            if (Array.isArray(arr)) {
+              state.visitedSurahs = new Set(arr.filter((n) => n >= 1 && n <= 114));
+            }
+          }
+
+          const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+          if (savedTheme) state.theme = savedTheme;
+
+          const savedFontSize = parseFloat(localStorage.getItem(STORAGE_KEYS.FONT_SIZE));
+          if (!Number.isNaN(savedFontSize) && savedFontSize >= 1.1 && savedFontSize <= 2.6) {
+            state.fontSizeRem = savedFontSize;
+          }
+
+          const savedFontMode = localStorage.getItem(STORAGE_KEYS.FONT_FAMILY);
+          if (savedFontMode === 'naskh' || savedFontMode === 'amiri') {
+            state.fontMode = savedFontMode;
+          }
+
+          const savedReciter = localStorage.getItem(STORAGE_KEYS.RECITER);
+          if (savedReciter) {
+            state.reciter = savedReciter;
+            if (reciterSelect) reciterSelect.value = savedReciter;
+          }
+        } catch (err) {
+          // Safe fallback to defaults
+        }
+      }
+
+      function savePreferences() {
+        try {
+          localStorage.setItem(STORAGE_KEYS.BOOKMARK, JSON.stringify(state.bookmark));
+          localStorage.setItem(STORAGE_KEYS.VISITED_SURAHS, JSON.stringify([...state.visitedSurahs]));
+          localStorage.setItem(STORAGE_KEYS.THEME, state.theme);
+          localStorage.setItem(STORAGE_KEYS.FONT_SIZE, String(state.fontSizeRem));
+          localStorage.setItem(STORAGE_KEYS.FONT_FAMILY, state.fontMode);
+          localStorage.setItem(STORAGE_KEYS.RECITER, state.reciter);
+        } catch (err) {
+          // Ignore storage quota errors
+        }
+      }
+
+      function applyVisualPreferences() {
+        document.body.classList.remove('theme-sepia', 'theme-night');
+        if (state.theme === 'sepia') document.body.classList.add('theme-sepia');
+        if (state.theme === 'night') document.body.classList.add('theme-night');
+
+        themeButtons.forEach((btn) => {
+          const isSelected = btn.dataset.theme === state.theme;
+          btn.classList.toggle('ring-2', isSelected);
+          btn.classList.toggle('ring-goldLeaf-400', isSelected);
+          btn.classList.toggle('opacity-100', isSelected);
+        });
+
+        document.documentElement.style.setProperty('--quran-size', `${state.fontSizeRem}rem`);
+
+        if (state.fontMode === 'naskh') {
+          document.documentElement.style.setProperty('--quran-font', "'Noto Naskh Arabic', serif");
+          fontToggleBtn.textContent = 'الخط: نسخ واضح';
+        } else {
+          document.documentElement.style.setProperty('--quran-font', "'Amiri', serif");
+          fontToggleBtn.textContent = 'الخط: أميري نَسخ';
+        }
+      }
+
+      function updateKhatmahProgress() {
+        state.visitedSurahs.add(state.currentSurahNumber);
+        savePreferences();
+        const count = state.visitedSurahs.size;
+        const pct = Math.min(100, Math.round((count / 114) * 100));
+        if (khatmahProgressBar) khatmahProgressBar.style.width = `${pct}%`;
+        if (khatmahPercentText) khatmahPercentText.textContent = `${toArabicDigits(pct)}٪`;
+      }
+
+      // ============================================================
+      // 8. FULL QURAN DATA FETCHING (114 SURAHS, 6236 AYAHS)
+      // ============================================================
+      async function fetchCompleteQuran() {
+        loadingBox.classList.remove('hidden');
+        errorBox.classList.add('hidden');
+        mushafPageArticle.classList.add('hidden');
+
+        try {
+          const response = await fetch(QURAN_API_URL);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const payload = await response.json();
+          if (!payload || !payload.data || !Array.isArray(payload.data.surahs)) {
+            throw new Error('Invalid Quran API response');
+          }
+
+          state.surahs = Object.freeze(payload.data.surahs);
+
+          populateJuzDropdown();
+          renderSurahIndexList('');
+          updateCoverBookmarkHint();
+
+          loadingBox.classList.add('hidden');
+          mushafPageArticle.classList.remove('hidden');
+
+          renderSurahPage(state.currentSurahNumber, state.currentAyahIndexInSurah, false);
+        } catch (err) {
+          loadingBox.classList.add('hidden');
+          errorBox.classList.remove('hidden');
+        }
+      }
+
+      function updateCoverBookmarkHint() {
+        if (!state.surahs.length || !state.bookmark) return;
+        const s = state.surahs[state.bookmark.surah - 1];
+        if (s && coverBookmarkHint && coverBookmarkText) {
+          coverBookmarkText.textContent = `${s.name} • آية ${toArabicDigits(state.bookmark.ayahInSurah)}`;
+          coverBookmarkHint.classList.remove('hidden');
+        }
+      }
+
+      // ============================================================
+      // 9. RENDER SURAH INDEX & JUZ SELECTOR
+      // ============================================================
+      function populateJuzDropdown() {
+        if (!juzSelect) return;
+        juzSelect.innerHTML = '<option value="">-- اختر الجزء (١ إلى ٣٠) --</option>';
+        JUZ_START_MAP.forEach((item) => {
+          const opt = document.createElement('option');
+          opt.value = `${item.surah}:${item.ayah}`;
+          opt.textContent = `${toArabicDigits(item.juz)}. ${item.name}`;
+          juzSelect.appendChild(opt);
+        });
+      }
+
+      function renderSurahIndexList(filterQuery) {
+        if (!surahListContainer || !state.surahs.length) return;
+        const normQuery = normalizeArabicSearch(filterQuery);
+        surahListContainer.innerHTML = '';
+
+        const filtered = state.surahs.filter((s) => {
+          if (!normQuery) return true;
+          const normName = normalizeArabicSearch(s.name);
+          return normName.includes(normQuery) || String(s.number) === normQuery;
+        });
+
+        if (!filtered.length) {
+          surahListContainer.innerHTML =
+            '<p class="text-center text-sm text-emerald-200/70 py-8">لا توجد سورة مطابقة لبحثك</p>';
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        filtered.forEach((s) => {
+          const isCurrent = s.number === state.currentSurahNumber;
+          const isBookmarked = state.bookmark && state.bookmark.surah === s.number;
+          const revType = s.revelationType === 'Meccan' ? 'مكية' : 'مدنية';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `w-full text-right px-3.5 py-3 rounded-2xl border transition flex items-center justify-between gap-2 ${
+            isCurrent
+              ? 'bg-goldLeaf-400/20 border-goldLeaf-400 text-goldLeaf-200'
+              : 'bg-emeraldBook-900/65 hover:bg-emeraldBook-800/80 border-goldLeaf-400/20 text-parchment-50'
+          }`;
+
+          btn.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl bg-emeraldBook-950 border border-goldLeaf-400/50 text-goldLeaf-300 text-xs font-extrabold flex items-center justify-center shrink-0">
+                ${toArabicDigits(s.number)}
+              </span>
+              <div>
+                <div class="font-amiri text-lg font-bold leading-tight flex items-center gap-1.5">
+                  <span>${s.name}</span>
+                  ${isBookmarked ? '<span title="علامة محفوظة" class="text-xs">🔖</span>' : ''}
+                </div>
+                <div class="text-[11px] text-emerald-200/75">
+                  ${revType} • ${toArabicDigits(s.ayahs.length)} آية
+                </div>
+              </div>
+            </div>
+            <span class="text-goldLeaf-400 text-sm">←</span>
+          `;
+
+          btn.addEventListener('click', () => {
+            closeDrawer();
+            renderSurahPage(s.number, 0, true);
+          });
+
+          fragment.appendChild(btn);
+        });
+
+        surahListContainer.appendChild(fragment);
+      }
+
+      // ============================================================
+      // 10. RENDER ACTIVE SURAH PAGE (STRICTLY READ-ONLY)
+      // ============================================================
+      function renderSurahPage(surahNumber, targetAyahIdx = 0, animateTurn = true) {
+        const surah = state.surahs[surahNumber - 1];
+        if (!surah) return;
+
+        state.currentSurahNumber = surah.number;
+        state.currentAyahIndexInSurah = Math.min(Math.max(0, targetAyahIdx), surah.ayahs.length - 1);
+
+        const firstAyah = surah.ayahs[0];
+        const revType = surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية';
+        const juzNumber = firstAyah ? firstAyah.juz : 1
